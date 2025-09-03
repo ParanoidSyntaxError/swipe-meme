@@ -22,6 +22,7 @@ export function Swiper() {
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [touchStartX, setTouchStartX] = useState(0);
 	const [mouseStartX, setMouseStartX] = useState(0);
+	const [isMobile, setIsMobile] = useState(false);
 	const cardRef = useRef<HTMLDivElement>(null);
 
 	const [ideas, setIdeas] = useState<TokenIdea[]>([]);
@@ -31,8 +32,23 @@ export function Swiper() {
 
 	useEffect(() => {
 		getTokenIdeas().then((ideas) => {
-			setIdeas(ideas);
+			setIdeas([...ideas].sort(() => Math.random() - 0.5));
 		});
+	}, []);
+
+	// Detect mobile device
+	useEffect(() => {
+		const checkMobile = () => {
+			const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+								  window.innerWidth <= 768 || 
+								  ('ontouchstart' in window);
+			setIsMobile(isMobileDevice);
+		};
+		
+		checkMobile();
+		window.addEventListener('resize', checkMobile);
+		
+		return () => window.removeEventListener('resize', checkMobile);
 	}, []);
 
 	const handleSwipe = (direction: "left" | "right") => {
@@ -42,12 +58,23 @@ export function Swiper() {
 		const finalOffset = direction === "right" ? 1200 : -1200
 		setDragOffset(finalOffset)
 
+		// Use longer animation duration for mobile devices
+		const animationDuration = isMobile ? 600 : 400;
+		
 		setTimeout(() => {
 			setDragOffset(0);
 			setIsAnimating(false);
+			if(ideaIndex + 1 >= ideas.length) {
+				getTokenIdeas().then((ideas) => {
+					setIdeas([ideas[ideaIndex], ...ideas.sort(() => Math.random() - 0.5)]);
+				});
+				setIdeaIndex(0);
+			} else {
+				setIdeaIndex(ideaIndex + 1);
+			}
 			setIdeaIndex(ideaIndex + 1 >= ideas.length ? 0 : ideaIndex + 1);
 			setImageLoaded(false);
-		}, 400)
+		}, animationDuration)
 	}
 
 	const handleMouseDown = (e: React.MouseEvent) => {
@@ -148,7 +175,7 @@ export function Swiper() {
 						transition: isDragging
 							? "none"
 							: isAnimating
-								? "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+								? `all ${isMobile ? '0.6s' : '0.4s'} cubic-bezier(0.25, 0.46, 0.45, 0.94)`
 								: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
 						userSelect: "none",
 						WebkitUserSelect: "none",
