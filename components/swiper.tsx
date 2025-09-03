@@ -169,7 +169,7 @@ export function Swiper() {
 						<>
 							<div className="relative h-full">
 								<Image
-									src={ideas[ideaIndex].imageUrl}
+									src={ideas[ideaIndex].imageUrl || `https://picsum.photos/400?random=${Math.random()}`}
 									alt={ideas[ideaIndex].name}
 									fill
 									className={cn(
