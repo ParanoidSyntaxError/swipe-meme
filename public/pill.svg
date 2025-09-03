@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 6 200.52 200.52" role="img" aria-label="swipe.meme pill (cropped)">
+  <defs>
+    <!-- Pill clip in local coords (centered at 0,0), 15% narrower: 190.4 × 96, rx 48 -->
+    <clipPath id="pillClip" clipPathUnits="userSpaceOnUse">
+      <rect x="-95.2" y="-48" width="190.4" height="96" rx="48"/>
+    </clipPath>
+  </defs>
+
+  <!-- Center at half the viewBox and rotate -45° -->
+  <g transform="translate(107.2577 107.2577) rotate(-45)">
+    <!-- Halves (no gradients, no shine) -->
+    <g clip-path="url(#pillClip)">
+      <rect x="-95.2" y="-48" width="95.2" height="96" fill="#ee2c80"/>
+      <rect x="0" y="-48" width="95.2" height="96" fill="#ffffff"/>
+    </g>
+
+    <!-- Outline and center divider (continue outline through middle) -->
+    <rect x="-95.2" y="-48" width="190.4" height="96" rx="48"
+          fill="none" stroke="#d11f72" stroke-width="12"/>
+    <line x1="0" y1="-48" x2="0" y2="48"
+          stroke="#d11f72" stroke-width="12" stroke-linecap="butt"/>
+  </g>
+</svg>
