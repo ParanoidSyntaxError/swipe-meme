@@ -114,23 +114,28 @@ export function Swiper() {
 	const scale = isDragging ? 0.98 : 1
 
 	return (
-		<div className="flex flex-col items-center justify-center h-full p-4">
-			<Link href="/">
-				<div className="absolute flex flex-row items-center gap-x-1 top-0 left-0 text-gray-700 text-4xl font-extrabold p-4">
-					<Image
-						src="/pill.svg"
-						alt="swipe.meme pill"
-						width={40}
-						height={40}
-					/>
-					<span>swipe</span>
+		<div className="flex flex-col items-center justify-center h-full px-2 pb-4">
+			<div className={cn(
+				"flex flex-row items-center justify-between w-full",
+				"md:absolute md:top-0 md:left-0 md:right-0"
+			)}>
+				<Link href="/">
+					<div className="flex flex-row items-center gap-x-1 text-gray-700 text-4xl font-extrabold p-4">
+						<Image
+							src="/pill.svg"
+							alt="swipe.meme pill"
+							width={40}
+							height={40}
+						/>
+						<span>swipe</span>
+					</div>
+				</Link>
+				<div className="text-gray-700 text-4xl font-extrabold p-4">
+					<ConnectButton />
 				</div>
-			</Link>
-			<div className="absolute top-0 right-0 text-gray-700 text-4xl font-extrabold p-4">
-				<ConnectButton />
 			</div>
 			{/* Card Stack */}
-			<div className="relative w-full max-h-[500px] max-w-sm flex-1 mb-6">
+			<div className="relative w-full max-h-[500px] max-w-sm flex-1 mb-6 pt-4">
 				{/* Main card (current post) */}
 				<Card
 					ref={cardRef}
