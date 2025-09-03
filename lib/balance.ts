@@ -1,6 +1,6 @@
 "use server";
 
-import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 type CachedLamportBalance = {
     lamports: number;

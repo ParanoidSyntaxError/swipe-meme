@@ -67,7 +67,7 @@ export function Swiper() {
 		setDragOffset(newDragOffset)
 	}
 
-	const handleMouseUp = (e: React.MouseEvent) => {
+	const handleMouseUp = () => {
 		if (!isDragging) return
 		setIsDragging(false)
 
@@ -97,7 +97,7 @@ export function Swiper() {
 		setDragOffset(newDragOffset)
 	}
 
-	const handleTouchEnd = (e: React.TouchEvent) => {
+	const handleTouchEnd = () => {
 		if (!isDragging) return
 		setIsDragging(false)
 

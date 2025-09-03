@@ -1,8 +1,6 @@
-interface SpinnerProps extends React.HTMLAttributes<HTMLElement> { }
-
 export default function Spinner({
     ...props
-}: SpinnerProps) {
+}: React.HTMLAttributes<HTMLElement>) {
     return (
         <div
             {...props}
