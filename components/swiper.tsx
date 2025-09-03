@@ -141,7 +141,7 @@ export function Swiper() {
 					ref={cardRef}
 					className={cn(
 						"h-full p-0 m-0 bg-gray-100 border-0 shadow-xl rounded-2xl cursor-grab active:cursor-grabbing overflow-hidden select-none",
-						ideas.length === 0 || !imageLoaded && "pointer-events-none"
+						(ideas.length === 0 || !imageLoaded) && "pointer-events-none"
 					)}
 					style={{
 						transform: `translateX(${dragOffset}px) rotate(${rotation}deg) scale(${scale})`,
