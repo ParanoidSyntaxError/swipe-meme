@@ -9,18 +9,18 @@ export type PumpfunMeta = {
     score: number;
 };
 
-export async function getForYouPumpfunTokens(): Promise<PumpfunToken[] | null> {
+export async function getNewestPumpfunTokens(): Promise<PumpfunToken[] | null> {
     try {
-        const response = await fetch(`${process.env.PUMPFUN_FRONTEND_API}/coins/for-you?offset=0&limit=10&includeNsfw=true`);
+        const response = await fetch(`${process.env.PUMPFUN_FRONTEND_API}/coins?offset=0&limit=40&sort=created_timestamp&includeNsfw=true&order=DESC`);
         if(!response.ok) {
-            console.error("Error fetching for you pumpfun tokens:", response.statusText);
+            console.error("Error fetching newest pumpfun tokens:", response.statusText);
             return null;
         }
 
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("Error getting for you pumpfun tokens:", error);
+        console.error("Error getting newest pumpfun tokens:", error);
         return null;
     }
 }

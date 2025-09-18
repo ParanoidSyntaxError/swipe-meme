@@ -12,7 +12,7 @@ import {
 import Image from "next/image"
 import ConnectButton from "./connect-button"
 import Link from "next/link"
-import { getTokenIdeas, TokenIdea } from "@/lib/ai";
+import { getTokenIdeas, TokenIdea } from "@/lib/ideas";
 import { cn } from "@/lib/utils";
 import Spinner from "./ui/spinner";
 
@@ -196,7 +196,9 @@ export function Swiper() {
 						<>
 							<div className="relative h-full">
 								<Image
-									src={ideas[ideaIndex].imageUrl || `https://picsum.photos/400?random=${Math.random()}`}
+									src={ideas[ideaIndex].imageUrl || 
+										`https://picsum.photos/400?random=${Math.trunc(Math.random() * 10000)}`
+									}
 									alt={ideas[ideaIndex].name}
 									fill
 									className={cn(

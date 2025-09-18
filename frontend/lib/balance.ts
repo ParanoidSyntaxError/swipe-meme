@@ -10,7 +10,7 @@ type CachedLamportBalance = {
 const cache = new Map<string, CachedLamportBalance>();
 const cacheTtl = 1000 * 10; // 10 seconds
 
-const connection = new Connection(process.env.SOLANA_RPC!, "confirmed");
+const connection = new Connection(process.env.SOLANA_RPC, "confirmed");
 
 export async function getLamportBalance(address: string): Promise<number | null> {
     try {
