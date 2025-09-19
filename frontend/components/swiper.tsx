@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
 	Heart,
 	X,
-	RotateCcw,
 	Pencil,
 } from "lucide-react";
 import Image from "next/image";
