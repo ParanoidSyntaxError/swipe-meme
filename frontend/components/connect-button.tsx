@@ -3,7 +3,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from './ui/button';
 import { ConnectedStandardSolanaWallet, useConnectedStandardWallets } from '@privy-io/react-auth/solana';
-import { cn, shortenAddress } from '@/lib/utils';
+import { cn, formatBalance, shortenAddress } from '@/lib/utils';
 import Spinner from '@/components/ui/spinner';
 import {
     DropdownMenu,
@@ -14,27 +14,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from 'react';
-import { getLamportBalance } from '@/lib/balance';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { CopyIcon, LogOutIcon } from 'lucide-react';
-
-export function formatSolBalance(lamports: number | null): string {
-    if (lamports === null) {
-        return "0";
-    }
-
-    const sol = lamports / LAMPORTS_PER_SOL;
-    if (sol >= 1) {
-        return Math.floor(sol).toLocaleString();
-    } else if (sol > 0) {
-        return sol.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 3,
-        });
-    } else {
-        return "0";
-    }
-}
+import { getLamportBalance } from '@/lib/swipememe-api';
 
 export default function ConnectButton() {
     const { ready: privyReady, connectWallet } = usePrivy();
@@ -99,7 +81,7 @@ export default function ConnectButton() {
                 <DropdownMenuContent align='end' className='w-42 border-3 border-gray-200 rounded-xl'>
                     <DropdownMenuLabel className='flex flex-row items-center gap-x-2'>
                         <div className='text-gray-700 text-xl font-bold'>
-                            {`${formatSolBalance(balance)} SOL`}
+                            {`${formatBalance(balance, LAMPORTS_PER_SOL)} SOL`}
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator

@@ -25,6 +25,12 @@
 		"paths": {
 			"@/*": [
 				"./*"
+			],
+			"@swipememe-api/types": [
+				"../backend/src/types.ts"
+			],
+			"@swipememe-api/constants": [
+				"../backend/src/constants.ts"
 			]
 		}
 	},

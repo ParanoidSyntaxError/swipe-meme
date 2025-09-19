@@ -1,20 +1,22 @@
 "use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
 	Heart,
 	X,
 	RotateCcw,
-} from "lucide-react"
-import Image from "next/image"
-import ConnectButton from "./connect-button"
-import Link from "next/link"
-import { getTokenIdeas, TokenIdea } from "@/lib/ideas";
+	Pencil,
+} from "lucide-react";
+import Image from "next/image";
+import ConnectButton from "./connect-button";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Spinner from "./ui/spinner";
+import { IdeaDocument } from "@swipememe-api/types";
+import { getNewestIdeas } from "@/lib/swipememe-api";
 
 export function Swiper() {
 	const [dragOffset, setDragOffset] = useState(0);
@@ -25,29 +27,40 @@ export function Swiper() {
 	const [isMobile, setIsMobile] = useState(false);
 	const cardRef = useRef<HTMLDivElement>(null);
 
-	const [ideas, setIdeas] = useState<TokenIdea[]>([]);
+	const [ideas, setIdeas] = useState<IdeaDocument[]>([]);
 	const [ideaIndex, setIdeaIndex] = useState(0);
 
 	const [imageLoaded, setImageLoaded] = useState(false);
+	const [imageError, setImageError] = useState(false);
 
 	useEffect(() => {
-		getTokenIdeas().then((ideas) => {
-			setIdeas([...ideas].sort(() => Math.random() - 0.5));
+		// TODO: Add pagination - take into account cached page numbers
+		getNewestIdeas().then((newestIdeas) => {
+			if (newestIdeas === null) {
+				return;
+			}
+			setIdeas([...newestIdeas].sort(() => Math.random() - 0.5));
 		});
 	}, []);
+
+	// Reset image states when idea changes
+	useEffect(() => {
+		setImageLoaded(false);
+		setImageError(false);
+	}, [ideaIndex]);
 
 	// Detect mobile device
 	useEffect(() => {
 		const checkMobile = () => {
-			const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-								  window.innerWidth <= 768 || 
-								  ('ontouchstart' in window);
+			const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+				window.innerWidth <= 768 ||
+				('ontouchstart' in window);
 			setIsMobile(isMobileDevice);
 		};
-		
+
 		checkMobile();
 		window.addEventListener('resize', checkMobile);
-		
+
 		return () => window.removeEventListener('resize', checkMobile);
 	}, []);
 
@@ -60,13 +73,17 @@ export function Swiper() {
 
 		// Use longer animation duration for mobile devices
 		const animationDuration = isMobile ? 600 : 400;
-		
+
 		setTimeout(() => {
 			setDragOffset(0);
 			setIsAnimating(false);
-			if(ideaIndex + 1 >= ideas.length) {
-				getTokenIdeas().then((ideas) => {
-					setIdeas([ideas[ideaIndex], ...ideas.sort(() => Math.random() - 0.5)]);
+			if (ideaIndex + 1 >= ideas.length) {
+				// TODO: Add pagination
+				getNewestIdeas().then((newestIdeas) => {
+					if (newestIdeas === null) {
+						return;
+					}
+					setIdeas([...newestIdeas].sort(() => Math.random() - 0.5));
 				});
 				setIdeaIndex(0);
 			} else {
@@ -195,18 +212,30 @@ export function Swiper() {
 					{ideas.length > 0 ?
 						<>
 							<div className="relative h-full">
-								<Image
-									src={ideas[ideaIndex].imageUrl || 
-										`https://picsum.photos/400?random=${Math.trunc(Math.random() * 10000)}`
-									}
-									alt={ideas[ideaIndex].name}
-									fill
-									className={cn(
-										"object-cover h-full",
-										!imageLoaded && "opacity-0"
-									)}
-									onLoad={() => setImageLoaded(true)}
-								/>
+								{!imageError ? (
+									<Image
+										src={ideas[ideaIndex].imageUrl || `./pill.svg`}
+										alt={ideas[ideaIndex].name}
+										fill
+										className={cn(
+											"object-cover h-full",
+											!imageLoaded && "opacity-0"
+										)}
+										loading="eager"
+										onLoad={() => setImageLoaded(true)}
+										onError={() => {
+											setImageError(true);
+											setImageLoaded(true);
+										}}
+									/>
+								) : (
+									<Image
+										src="./pill.svg"
+										alt="Fallback image"
+										fill
+										className="object-cover h-full"
+									/>
+								)}
 								{!imageLoaded && <Spinner className="scale-20" />}
 							</div>
 							<div
@@ -261,7 +290,7 @@ export function Swiper() {
 					onClick={() => handleSwipe("left")}
 					disabled={isAnimating}
 				>
-					<X className="w-7 h-7" />
+					<X style={{ width: "1.4rem", height: "1.4rem" }} />
 				</Button>
 
 				<Button
@@ -269,12 +298,13 @@ export function Swiper() {
 					className="w-12 h-12 rounded-full bg-white border-2 border-gray-200 text-blue-500 hover:bg-blue-50 hover:border-blue-200 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
 					onClick={() => {
 						if (!isAnimating) {
+							setIsDragging(false);
 							setDragOffset(0)
 						}
 					}}
 					disabled={isAnimating}
 				>
-					<RotateCcw className="w-5 h-5" />
+					<Pencil style={{ width: "0.95rem", height: "0.95rem" }} />
 				</Button>
 
 				<Button
@@ -283,7 +313,7 @@ export function Swiper() {
 					onClick={() => handleSwipe("right")}
 					disabled={isAnimating}
 				>
-					<Heart className="w-7 h-7" />
+					<Heart style={{ width: "1.4rem", height: "1.4rem" }} />
 				</Button>
 			</div>
 		</div>
