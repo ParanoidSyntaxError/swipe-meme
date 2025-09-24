@@ -80,7 +80,7 @@ export default function ConnectButton() {
                 <DropdownMenuContent align='end' className='w-42 border-3 border-gray-200 rounded-xl'>
                     <DropdownMenuLabel className='flex flex-row items-center gap-x-2'>
                         <div className='text-gray-700 text-xl font-bold'>
-                            {`${formatBalance(balance, 9)} SOL`}
+                            {`${formatBalance(balance, 10 ** 9)} SOL`}
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator
