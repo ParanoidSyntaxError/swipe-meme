@@ -3,6 +3,9 @@ import { getTokenBalance } from "../../../solana/balance";
 import { TokenBalanceQuery, TokenBalanceResponse } from "./types";
 import { log } from "../../../utils/log";
 
+/**
+ * GET /token/balance
+ */
 export async function tokenBalanceHandler(req: Request, res: Response) {
     try {
         const query = req.query as TokenBalanceQuery;

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { newestIdeasHandler } from './handlers/ideas/newest';
 import { log } from '../utils/log';
+import { tokenBalanceHandler } from './handlers/token/balance';
 
 export function startApi(): boolean {
     try {
@@ -13,7 +14,10 @@ export function startApi(): boolean {
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
     
-        // Routes
+        // Token routes
+        app.get('/token/balance', tokenBalanceHandler);
+
+        // Idea routes
         app.post('/ideas/newest', newestIdeasHandler);
 
         // Health check
