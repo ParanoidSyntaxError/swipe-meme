@@ -2,6 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { solanaRpc } from "./rpc";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { NATIVE_SOL_ADDRESS } from "../constants";
+import { log } from "../utils/log";
 
 type CachedBalance = {
     amount: number;
@@ -37,7 +38,7 @@ export async function getTokenBalance(token: string, owner: string): Promise<num
         cache.get(owner)?.set(token, { amount, timestamp: Date.now() });
         return amount;
     } catch (error) {
-        console.error("Error getting token balance:", error);
+        log("error", error);
         return null;
     }
 }
@@ -57,7 +58,7 @@ export async function getLamportBalance(owner: string): Promise<number | null> {
         cache.get(owner)?.set(NATIVE_SOL_ADDRESS, { amount: lamports, timestamp: Date.now() });
         return lamports;
     } catch (error) {
-        console.error("Error getting lamport balance:", error);
+        log("error", error);
         return null;
     }
 }

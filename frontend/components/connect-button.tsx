@@ -2,7 +2,6 @@
 
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from './ui/button';
-import { ConnectedStandardSolanaWallet, useConnectedStandardWallets } from '@privy-io/react-auth/solana';
 import { cn, formatBalance, shortenAddress } from '@/lib/utils';
 import Spinner from '@/components/ui/spinner';
 import {
@@ -17,10 +16,11 @@ import { useState, useEffect } from 'react';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { CopyIcon, LogOutIcon } from 'lucide-react';
 import { getLamportBalance } from '@/lib/swipememe-api';
+import { useWallets, type ConnectedStandardSolanaWallet } from '@privy-io/react-auth/solana';
 
 export default function ConnectButton() {
     const { ready: privyReady, connectWallet } = usePrivy();
-    const { ready: walletsReady, wallets } = useConnectedStandardWallets();
+    const { ready: walletsReady, wallets } = useWallets();
 
     const [ready, setReady] = useState<boolean>(false);
     const [wallet, setWallet] = useState<ConnectedStandardSolanaWallet | null>(null);

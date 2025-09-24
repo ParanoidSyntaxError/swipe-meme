@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getTokenBalance } from "../../../solana/balance";
 import { TokenBalanceQuery, TokenBalanceResponse } from "./types";
+import { log } from "../../../utils/log";
 
 export async function tokenBalanceHandler(req: Request, res: Response) {
     try {
@@ -18,7 +19,7 @@ export async function tokenBalanceHandler(req: Request, res: Response) {
         };
         res.json(response);
     } catch (error) {
-        console.error("Error getting token balance:", error);
+        log("error", error);
         res.status(500).json({ error: "Failed to get token balance" });
     }
 }

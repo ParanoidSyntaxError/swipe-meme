@@ -2,10 +2,10 @@
 
 import { PrivyProvider } from '@privy-io/react-auth';
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
+import {createSolanaRpc, createSolanaRpcSubscriptions} from '@solana/kit'; 
 
 export default function Web3Provider({ children }: { children: React.ReactNode }) {
     const solanaConnectors = toSolanaWalletConnectors({
-        // By default, shouldAutoConnect is enabled
         shouldAutoConnect: true
     });
 
@@ -23,6 +23,14 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
                         connectors: solanaConnectors
                     },
                 },
+                solana: {
+                    rpcs: {
+                        'solana:mainnet': {
+                            rpc: createSolanaRpc('https://api.mainnet-beta.solana.com'),
+                            rpcSubscriptions: createSolanaRpcSubscriptions('wss://api.mainnet-beta.solana.com')
+                        },
+                    }
+                }
             }}
         >
             {children}

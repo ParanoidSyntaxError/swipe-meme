@@ -7,8 +7,8 @@ import { SwipeCard } from "./swipe-card";
 import {arrayToShuffled} from 'array-shuffle';
 
 export async function Swiper() {
-	const initialIdeas = arrayToShuffled((await getNewestIdeas()) ?? []);
-
+	const initialIdeas = arrayToShuffled((await getNewestIdeas())?.ideas ?? []);
+	
 	return (
 		<div className="flex flex-col items-center justify-center h-full px-2 pb-4">
 			<div className={cn(

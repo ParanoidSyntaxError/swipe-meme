@@ -1,3 +1,5 @@
+import { log } from "../utils/log";
+
 export type PumpfunToken = {
     name: string;
     symbol: string;
@@ -10,14 +12,14 @@ export async function getNewestPumpfunTokens(): Promise<PumpfunToken[] | null> {
             `/coins?offset=0&limit=40&sort=created_timestamp&includeNsfw=true&order=DESC`
         );
         if(!response.ok) {
-            console.error("Error fetching newest pumpfun tokens:", response.statusText);
+            log("error", response.statusText);
             return null;
         }
 
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("Error getting newest pumpfun tokens:", error);
+        log("error", error);
         return null;
     }
 }

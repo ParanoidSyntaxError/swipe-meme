@@ -1,4 +1,5 @@
 import { getAuthToken } from "./auth";
+import { log } from "../utils/log";
 
 export async function queryImageUrl(query: string): Promise<string | null> {
     try {
@@ -17,17 +18,20 @@ export async function queryImageUrl(query: string): Promise<string | null> {
             }
         });
         if(!response.ok) {
-            console.error("Error getting openverse image:", response.statusText);
+            log("error", response.statusText);
             return null;
         }
 
         const data = await response.json();
         const images: any[] = data.results;
-        
+        if(images.length === 0) {
+            return null;
+        }
+
         const randomImage = images[Math.floor(Math.random() * images.length)];
-        return randomImage.url;
+        return randomImage?.url ?? null;
     } catch (error) {
-        console.error("Error getting openverse image:", error);
+        log("error", error);
         return null;
     }
 }

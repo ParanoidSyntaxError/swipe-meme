@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Pencil, Heart, PencilOff } from "lucide-react";
+import { getNewestIdeas } from "@/lib/swipememe-api";
 
 export interface SwipeCardProps {
 	initialIdeas: IdeaDocument[];
@@ -27,8 +28,12 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 
 	const [ideas, setIdeas] = useState<IdeaDocument[]>(initialIdeas);
 	const [ideaIndex, setIdeaIndex] = useState(0);
-	//const [upperIdeaPage, setUpperIdeaPage] = useState<number | null>(initialIdeas?.[0]?.page ?? null);
-	//const [lowerIdeaPage, setLowerIdeaPage] = useState<number | null>(initialIdeas?.[0]?.page ?? null);
+	const [excludedIdeaPages, setExcludedIdeaPages] = useState<number[]>(
+		initialIdeas?.[0]?.page ? [initialIdeas[0].page] : []
+	);
+	const [isFetchingIdeas, setIsFetchingIdeas] = useState(false);
+	const [ideasOverflowed, setIdeasOverflowed] = useState(false);
+	const [newIdeasIndex, setNewIdeasIndex] = useState<number | undefined>(undefined);
 
 	const [imageLoaded, setImageLoaded] = useState(false);
 	const [imageError, setImageError] = useState(false);
@@ -48,6 +53,34 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 		setImageError(false);
 	}, [ideaIndex]);
 
+	const fetchNewIdeas = async () => {
+		if(isFetchingIdeas) {
+			return;
+		}
+		setIsFetchingIdeas(true);
+		
+		console.log("fetching new ideas");
+		const newIdeas = await getNewestIdeas(excludedIdeaPages);
+		console.log("newIdeas", newIdeas);
+		if(newIdeas !== null && newIdeas.ideas.length > 0) {
+			if(ideasOverflowed) {
+				setNewIdeasIndex(ideas.length);
+			}
+			setIdeas([
+				...ideas,
+				...newIdeas.ideas
+			]);
+			setExcludedIdeaPages([
+				...excludedIdeaPages,
+				newIdeas.page
+			]);
+
+			console.log("excludedIdeaPages", excludedIdeaPages);
+		}
+		
+		setIsFetchingIdeas(false);
+	}
+
 	// Initialize edit form data when entering edit mode
 	const initializeEditForm = () => {
 		const currentIdea = ideas[ideaIndex];
@@ -66,17 +99,6 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 			initializeEditForm();
 		}
 		setIsEditing(!isEditing);
-	};
-
-	// Save changes
-	const saveChanges = () => {
-		const updatedIdeas = [...ideas];
-		updatedIdeas[ideaIndex] = {
-			...updatedIdeas[ideaIndex],
-			...editFormData
-		};
-		setIdeas(updatedIdeas);
-		setIsEditing(false);
 	};
 
 	// Cancel changes
@@ -129,12 +151,24 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 		setTimeout(() => {
 			setDragOffset(0);
 			setIsAnimating(false);
+
+			if(!isFetchingIdeas && ideaIndex >= ideas.length - 20) {
+				fetchNewIdeas();
+			}
+
 			if (ideaIndex + 1 >= ideas.length) {
 				setIdeaIndex(0);
+				setIdeasOverflowed(true);
 			} else {
-				setIdeaIndex(ideaIndex + 1);
+				if(ideasOverflowed && newIdeasIndex !== undefined) {
+					setIdeaIndex(newIdeasIndex);
+					setIdeasOverflowed(false);
+					setNewIdeasIndex(undefined);
+				} else {
+					setIdeaIndex(ideaIndex + 1);	
+				}
 			}
-			setIdeaIndex(ideaIndex + 1 >= ideas.length ? 0 : ideaIndex + 1);
+			console.log("ideaIndex", ideaIndex);
 			setImageLoaded(false);
 		}, animationDuration)
 	}

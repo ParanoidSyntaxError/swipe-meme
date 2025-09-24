@@ -1,9 +1,10 @@
 import { startApi } from './api/server';
+import { log } from './utils/log';
 
 function main() {
     const apiStarted = startApi();
     if (!apiStarted) {
-        console.error("Failed to start API");
+        log("error", "Failed to start API");
         return;
     }
 }

@@ -1,7 +1,8 @@
-import { ObjectId } from "mongodb";
+import { Filter, ObjectId } from "mongodb";
 import { getCollection } from "../../client";
 import { SortDirection } from "../types";
 import { Idea, IdeaDocument } from "./types";
+import { log } from "../../../utils/log";
 
 // Page -> Ideas
 const cache = new Map<number, IdeaDocument[]>();
@@ -10,28 +11,32 @@ export function getIdeasCollection() {
     return getCollection<IdeaDocument>("ideas");
 }
 
-export async function getNewestPage(): Promise<number | null> {
+export async function getNewestPage(excludedPages?: number[]): Promise<number | null> {
     try {
         const collection = await getIdeasCollection();
 
+        const query: Filter<IdeaDocument> = {};
+        if(excludedPages && excludedPages.length > 0) {
+            query.page = { $nin: excludedPages };
+        }
+
         const newestPage = await collection
-            .find({}, { projection: { _id: 0, page: 1 } })
+            .find(query, { projection: { _id: 0, page: 1 } })
             .sort({ page: SortDirection.Descending })
             .limit(1)
             .next();
         if (!newestPage) {
-            console.error("Could not find newest page");
             return null;
         }
 
         return newestPage.page;
     } catch (error) {
-        console.error("Error getting newest page:", error);
+        log("error", error);
         return null;
     }
 }
 
-export async function getIdeas(page: number): Promise<IdeaDocument[] | null> {
+export async function getIdeasByPage(page: number): Promise<IdeaDocument[] | null> {
     try {
         const collection = await getIdeasCollection();
 
@@ -44,30 +49,32 @@ export async function getIdeas(page: number): Promise<IdeaDocument[] | null> {
 
         return ideas;
     } catch (error) {
-        console.error("Error getting ideas:", error);
+        log("error", error);
         return null;
     }
 }
 
-export async function getNewestIdeas(): Promise<IdeaDocument[] | null> {
+export async function getNewestIdeas(excludedPages?: number[], limit: number = 10): Promise<IdeaDocument[] | null> {
     try {
         const collection = await getIdeasCollection();
 
-        const newestPage = await getNewestPage();
+        const newestPage = await getNewestPage(excludedPages);
         if (newestPage === null) {
             return null;
         }
 
         if(cache.has(newestPage)) {
-            return cache.get(newestPage)!;
+            return cache.get(newestPage)!.slice(0, limit);
         }
 
-        const ideas = await collection.find({ page: newestPage }).toArray();
+        const ideas = await collection
+            .find({ page: newestPage })
+            .toArray();
         cache.set(newestPage, ideas);
 
-        return ideas;
+        return ideas.slice(0, limit);
     } catch (error) {
-        console.error("Error getting newest ideas:", error);
+        log("error", error);
         return null;
     }
 }
@@ -96,19 +103,19 @@ export async function insertIdeas(ideas: Idea[]): Promise<number | null> {
 
         const result = await collection.insertMany(docs);
         if(!result.acknowledged || result.insertedCount === 0) {
-            console.error("Inserting ideas failed");
+            log("error", "Inserting ideas failed");
             return null;
         }
 
         if(result.insertedCount !== ideas.length) {
-            console.error("Failed to insert all ideas:" + `Attempted: ${ideas.length}, Inserted: ${result.insertedCount}`);
+            log("error", `Failed to insert all ideas: Attempted: ${ideas.length}, Inserted: ${result.insertedCount}`);
         }
 
         cache.set(nextPage, docs);
         
         return nextPage;
     } catch (error) {
-        console.error("Error inserting ideas:", error);
+        log("error", error);
         return null;
     }
 }

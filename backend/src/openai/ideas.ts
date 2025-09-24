@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { getNewestPumpfunTokens } from "../pumpfun/tokens";
 import { PromptedIdea } from "./types";
+import { log } from "../utils/log";
 
 const openAiClient = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -41,7 +42,7 @@ export async function promptIdeas(count: number): Promise<PromptedIdea[] | null>
             ),
         });
         if (response.error) {
-            console.error("Error generating token ideas:", response.error);
+            log("error", response.error);
             return null;
         }
 
@@ -51,7 +52,7 @@ export async function promptIdeas(count: number): Promise<PromptedIdea[] | null>
             imageQuery: idea.imageQuery.replace("q=", "").replaceAll("+", "|").replaceAll(" ", "+")
         }));
     } catch (error) {
-        console.error("Error generating ideas:", error);
+        log("error", error);
         return null;
     }
 }

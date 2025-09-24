@@ -1,3 +1,5 @@
+import { log } from "../utils/log";
+
 let token: string | null = null;
 let tokenTtl = 0;
 let tokenTimestamp = new Date(0);
@@ -21,7 +23,7 @@ export async function getAuthToken() {
         });
 
         if(!response.ok) {
-            console.error("Error getting openverse auth token:", response.statusText);
+            log("error", response.statusText);
             return null;
         }
 
@@ -31,7 +33,7 @@ export async function getAuthToken() {
         tokenTimestamp = new Date();
         return token;
     } catch (error) {
-        console.error("Error getting openverse auth token:", error);
+        log("error", error);
         return null;
     }
 }

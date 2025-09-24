@@ -3,7 +3,7 @@ export type { IdeaDocument } from './database/collections/ideas/types';
 
 // API Types
 export type { 
-    NewestIdeasResponse 
+    NewestIdeasResponse,
 } from './api/handlers/ideas/types';
 
 export type { 
