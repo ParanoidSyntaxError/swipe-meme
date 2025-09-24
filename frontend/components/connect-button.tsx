@@ -13,7 +13,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from 'react';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { CopyIcon, LogOutIcon } from 'lucide-react';
 import { getLamportBalance } from '@/lib/swipememe-api';
 import { useWallets, type ConnectedStandardSolanaWallet } from '@privy-io/react-auth/solana';
@@ -81,7 +80,7 @@ export default function ConnectButton() {
                 <DropdownMenuContent align='end' className='w-42 border-3 border-gray-200 rounded-xl'>
                     <DropdownMenuLabel className='flex flex-row items-center gap-x-2'>
                         <div className='text-gray-700 text-xl font-bold'>
-                            {`${formatBalance(balance, LAMPORTS_PER_SOL)} SOL`}
+                            {`${formatBalance(balance, 9)} SOL`}
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator
