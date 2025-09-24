@@ -92,7 +92,7 @@ export async function insertIdeas(ideas: Idea[]): Promise<number | null> {
         const now = new Date();
 
         const docs: IdeaDocument[] = ideas.map(idea => ({
-            _id: new ObjectId(),
+            _id: new ObjectId().toHexString(),
             createdAt: now,
             name: idea.name,
             symbol: idea.symbol,
