@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getTokenBalance } from "../../../solana/balance";
 import { TokenBalanceQuery, TokenBalanceResponse } from "./types";
+import { address } from "@solana/kit";
 import { log } from "../../../utils/log";
 
 /**
@@ -9,7 +10,7 @@ import { log } from "../../../utils/log";
 export async function tokenBalanceHandler(req: Request, res: Response) {
     try {
         const query = req.query as TokenBalanceQuery;
-        const balance = await getTokenBalance(query.token, query.owner);
+        const balance = await getTokenBalance(address(query.owner), address(query.token));
         if(balance === null) {
             res.status(404).json({ error: "Token balance not found" });
             return;

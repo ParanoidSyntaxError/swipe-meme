@@ -4,7 +4,10 @@ declare namespace NodeJS {
 
         PORT: number;
 
+        SOLANA_FEE_PAYER: string;
+
         SOLANA_RPC: string;
+        SOLANA_RPC_WSS: string;
 
         PUMPFUN_FRONTEND_API: string;
 
@@ -16,5 +19,10 @@ declare namespace NodeJS {
 
         MONGODB_URI: string;
         MONGODB_DB_NAME: string;
+
+        PINATA_GATEWAY_URL: string;
+        PINATA_API_KEY: string;
+        PINATA_API_SECRET: string;
+        PINATA_JWT: string;
     }
 }

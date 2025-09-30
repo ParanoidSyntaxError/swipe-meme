@@ -3,6 +3,7 @@ import cors from 'cors';
 import { newestIdeasHandler } from './handlers/ideas/newest';
 import { log } from '../utils/log';
 import { tokenBalanceHandler } from './handlers/token/balance';
+import { createTokenHandler } from './handlers/token/create';
 
 export function startApi(): boolean {
     try {

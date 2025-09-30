@@ -4,7 +4,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getNewestIdeas } from "@/lib/swipememe-api";
 import { SwipeCard } from "./swipe-card";
-import {arrayToShuffled} from 'array-shuffle';
+import { arrayToShuffled } from "array-shuffle";
 
 export async function Swiper() {
 	const initialIdeas = arrayToShuffled((await getNewestIdeas())?.ideas ?? []);

@@ -12,6 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Pencil, Heart, PencilOff } from "lucide-react";
 import { getNewestIdeas } from "@/lib/swipememe-api";
+import { arrayToShuffled } from 'array-shuffle';
+import { address, appendTransactionMessageInstruction, blockhash, compileTransaction, createTransactionMessage, generateKeyPairSigner, getBase58Decoder, getTransactionEncoder, partiallySignTransaction, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash } from "@solana/kit";
+import { uploadPumpfunTokenMetadata } from "@/lib/pinata";
+import { getCreateInstructionAsync, PUMP_PROGRAM_ADDRESS } from "../programs/pump";
+import { usePrivy } from "@privy-io/react-auth";
+import { useWallets, type ConnectedStandardSolanaWallet, useSignAndSendTransaction } from '@privy-io/react-auth/solana';
+import { getLatestBlockhash } from "@/lib/solana";
 
 export interface SwipeCardProps {
 	initialIdeas: IdeaDocument[];
@@ -47,6 +54,19 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 		imageUrl: ''
 	});
 
+	const { ready: privyReady } = usePrivy();
+	const { ready: walletsReady, wallets } = useWallets();
+	const [wallet, setWallet] = useState<ConnectedStandardSolanaWallet | null>(null);
+	const { signAndSendTransaction } = useSignAndSendTransaction();
+
+	useEffect(() => {
+		if (privyReady && walletsReady) {
+			if (wallets.length > 0) {
+				setWallet(wallets[0]);
+			}
+		}
+	}, [privyReady, walletsReady, wallets]);
+
 	// Reset image states when idea changes
 	useEffect(() => {
 		setImageLoaded(false);
@@ -54,30 +74,26 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 	}, [ideaIndex]);
 
 	const fetchNewIdeas = async () => {
-		if(isFetchingIdeas) {
+		if (isFetchingIdeas) {
 			return;
 		}
 		setIsFetchingIdeas(true);
-		
-		console.log("fetching new ideas");
+
 		const newIdeas = await getNewestIdeas(excludedIdeaPages);
-		console.log("newIdeas", newIdeas);
-		if(newIdeas !== null && newIdeas.ideas.length > 0) {
-			if(ideasOverflowed) {
+		if (newIdeas !== null && newIdeas.ideas.length > 0) {
+			if (ideasOverflowed) {
 				setNewIdeasIndex(ideas.length);
 			}
 			setIdeas([
-				...ideas,
+				...arrayToShuffled(newIdeas.ideas),
 				...newIdeas.ideas
 			]);
 			setExcludedIdeaPages([
 				...excludedIdeaPages,
 				newIdeas.page
 			]);
-
-			console.log("excludedIdeaPages", excludedIdeaPages);
 		}
-		
+
 		setIsFetchingIdeas(false);
 	}
 
@@ -120,6 +136,90 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 		}));
 	};
 
+	const handleCreateToken = async () => {
+		try {
+			if (!wallet) {
+				console.error("No wallet connected");
+				return;
+			}
+
+			const metadata = isEditing ? {
+				name: editFormData.name,
+				symbol: editFormData.symbol,
+				description: editFormData.description,
+				image: editFormData.imageUrl,
+			} : {
+				name: ideas[ideaIndex].name,
+				symbol: ideas[ideaIndex].symbol,
+				description: ideas[ideaIndex].description,
+				image: ideas[ideaIndex].imageUrl || 'https://swipe.meme/pill.svg',
+			};
+
+			const [tokenKeypair, metadataCid] = await Promise.all([
+				generateKeyPairSigner(),
+				uploadPumpfunTokenMetadata({
+					...metadata,
+					showName: true,
+					createdOn: "https://pump.fun",
+				})
+			]);
+			if (metadataCid === null) {
+				return;
+			}
+
+			const tokenUri = `https://ipfs.io/ipfs/${metadataCid}`;
+
+			const [createPumpTokenInstruction, latestBlockhash] = await Promise.all([
+				getCreateInstructionAsync({
+					name: metadata.name,
+					symbol: metadata.symbol,
+					uri: tokenUri,
+					creator: address("DxJnGG6iXZyMnQu7XawWKZPwoRVgR7CbRp3UykhCALua"),
+					user: {
+						address: address(wallet.address),
+						signAndSendTransactions: async () => ([])
+					},
+					mint: tokenKeypair,
+					program: PUMP_PROGRAM_ADDRESS,
+				}),
+				getLatestBlockhash()
+			]);
+			if(latestBlockhash === null) {
+				return;
+			}
+
+			const transactionMessage = pipe(
+				createTransactionMessage({
+					version: 0,
+				}),
+				(m) => setTransactionMessageFeePayer(address(wallet.address), m),
+				(m) => setTransactionMessageLifetimeUsingBlockhash({
+					blockhash: blockhash(latestBlockhash.blockhash),
+					lastValidBlockHeight: BigInt(latestBlockhash.lastValidBlockHeight)
+				}, m),
+				(m) => appendTransactionMessageInstruction(createPumpTokenInstruction, m),
+				(m) => compileTransaction(m)
+			);
+			const partiallySignedTransaction = await partiallySignTransaction([tokenKeypair.keyPair], transactionMessage);
+			const encodedTransaction = getTransactionEncoder().encode(partiallySignedTransaction);
+
+			const { signature } = await signAndSendTransaction({
+				transaction: new Uint8Array(encodedTransaction),
+				wallet: wallet,
+				options: {
+					commitment: "confirmed",
+					maxRetries: 3
+				}
+			});
+			const decodedSignature = getBase58Decoder().decode(signature);
+
+			console.log("✅ Token:", tokenKeypair.address);
+			console.log("✅ Signature:", decodedSignature);
+		} catch (error) {
+			console.error("Error creating token:", error);
+		}
+	};
+
 	// Detect mobile device
 	useEffect(() => {
 		const checkMobile = () => {
@@ -136,12 +236,18 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 	}, []);
 
 	const handleSwipe = (direction: "left" | "right") => {
-		if (isAnimating) return
+		if (isAnimating) {
+			return;
+		}
+		setIsAnimating(true);
+
+		if (direction === "right") {
+			handleCreateToken();
+		}
 
 		setIsEditing(false);
 		cancelChanges();
 
-		setIsAnimating(true)
 		const finalOffset = direction === "right" ? 1200 : -1200
 		setDragOffset(finalOffset)
 
@@ -152,7 +258,7 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 			setDragOffset(0);
 			setIsAnimating(false);
 
-			if(!isFetchingIdeas && ideaIndex >= ideas.length - 20) {
+			if (!isFetchingIdeas && ideaIndex >= ideas.length - 20) {
 				fetchNewIdeas();
 			}
 
@@ -160,15 +266,14 @@ export function SwipeCard({ initialIdeas }: SwipeCardProps) {
 				setIdeaIndex(0);
 				setIdeasOverflowed(true);
 			} else {
-				if(ideasOverflowed && newIdeasIndex !== undefined) {
+				if (ideasOverflowed && newIdeasIndex !== undefined) {
 					setIdeaIndex(newIdeasIndex);
 					setIdeasOverflowed(false);
 					setNewIdeasIndex(undefined);
 				} else {
-					setIdeaIndex(ideaIndex + 1);	
+					setIdeaIndex(ideaIndex + 1);
 				}
 			}
-			console.log("ideaIndex", ideaIndex);
 			setImageLoaded(false);
 		}, animationDuration)
 	}

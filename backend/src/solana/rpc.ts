@@ -1,3 +1,4 @@
-import { Connection } from "@solana/web3.js";
+import { createSolanaRpcSubscriptions, createSolanaRpc } from "@solana/kit";
 
-export const solanaRpc = new Connection(process.env.SOLANA_RPC, "confirmed");
+export const solanaRpc = createSolanaRpc(process.env.SOLANA_RPC);
+export const solanaRpcSubscriptions = createSolanaRpcSubscriptions(process.env.SOLANA_RPC_WSS);

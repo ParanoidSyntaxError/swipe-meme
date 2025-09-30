@@ -28,10 +28,10 @@ export async function getNewestIdeas(excludedPages?: number[]): Promise<NewestId
     }
 }
 
-export async function getLamportBalance(address: string): Promise<number | null> {
+export async function getLamportBalance(owner: string): Promise<number | null> {
     try {
         const response = await fetch(process.env.NEXT_PUBLIC_SWIPEMEME_API +
-            `/token/balance?token=${NATIVE_SOL_ADDRESS}&owner=${address}`
+            `/token/balance?token=${NATIVE_SOL_ADDRESS}&owner=${owner}`
         );
         if (!response.ok) {
             console.error("Error getting lamport balance:", response.statusText);
@@ -46,10 +46,10 @@ export async function getLamportBalance(address: string): Promise<number | null>
     }
 }
 
-export async function getTokenBalance(token: string, address: string): Promise<number | null> {
+export async function getTokenBalance(token: string, owner: string): Promise<number | null> {
     try {
         const response = await fetch(process.env.NEXT_PUBLIC_SWIPEMEME_API +
-            `/token/balance?token=${token}&owner=${address}`
+            `/token/balance?token=${token}&owner=${owner}`
         );
         if (!response.ok) {
             console.error("Error getting token balance:", response.statusText);
